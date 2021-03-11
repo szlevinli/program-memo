@@ -53,7 +53,7 @@ pi.evalf(100)
 
 ### `lambdify`
 
-使用其他的数字计算包计算, 提供效率
+使用其他的数字计算包计算, 提高效率
 
 ```python
 import numpy 
