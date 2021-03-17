@@ -259,7 +259,156 @@ compose(id, f) === compose(f, id) === f;
 
 ## Example Application
 
+### Declarative Coding
 
+Declarative Coding (声明式编码) 与之相对的是 Imperative Coding (命令式编码).
+
+**Imperative Coding** 告诉计算机应该干什么. (*telling the computer how to do its job*)
+
+**Declarative Coding** 告诉计算机我想要什么. (*write a specification of what we'd like as a result*)
+
+```js
+// imperative
+const makes = [];
+for (let i = 0; i < cars.length; i +=1) {
+  makes.push(cars[i].make);
+}
+
+// declarative
+const makes = cars.map((car) => car.make);
+```
+
+```js
+// imperative
+const authenticate = (form) => {
+  const user = toUser(form);
+  return logIn(user);
+}
+
+// declarative
+const authenticate = compose(login, toUser);
+```
+
+==**Declarative Coding** leaves wiggle room for support code changes and results in our application code being a high level specification. (声明式代码为支持代码更改留下了回旋余地, 并使得我们的程序代码成为一个高层次的规范)==
+
+## Hindley-Milner and Me
+
+欣德利-米尔纳类型签名. 这是一种专用于函数式编程的签名语言.
+
+```js
+// capitalize :: String -> String
+const capitalize = s => toUpperCase(head(s)) + toLowerCase(tail(s));
+
+capitalize('smurf'); // 'Smurf'
+```
+
+这里 `capitalize` 接收一个 `String` 作为入参, 返回一个 `String` 结果.
+
+```js
+// match :: Regex -> (String -> [String])
+const match = curry((reg, s) => s.match(reg));
+```
+
+这里 `match` 接收一个 `Regex` 返回一个函数, 该函数接收一个 `String` 并返回一个 `[String]`.
+
+```js
+// replace :: Regex -> (String -> (String -> String))
+const replace = curry((reg, sub, s) => s.replace(reg, sub));
+```
+
+这里 `replace` 接收一个 `Regex` 返回一个函数, 该函数接收一个 `String` 返回函数, 这个函数也接收一个 `String` 并最终返回一个 `String` 作为结果.
+
+```js
+// id :: a -> a
+const id = x => x;
+
+// map :: (a -> b) -> [a] -> [b]
+const map = curry((f, xs) => xs.map(f));
+```
+
+`id` 接收一个类型为 `a` 的参数, 并返回同样是类型 `a` 的结果.
+
+==`map` 接收一个函数, 该函数接收一个类型为 `a` 的参数, 并返回一个类型为 `b` 的结果, 接着将该函数应用到类型为 `a` 的数组中, 最终得到一个类型为 `b` 的数组.==
+
+```js
+// reduce :: ((b, a) -> b) -> b -> [a] -> b
+const reduce = curry((f, x, xs) => xs.reduce(f, x));
+```
+
+==`reduce` 接收一个有两个参数分别是类型 `a` 和类型 `b` 的函数, 该函数返回类型 `b`, 将该函数应用到类型 `b` 和 类型 `a` 的数组中, 并最终返回类型 `b` 作为结果.==
+
+## Tupperware
+
+特百惠. 这节主要接收函数式编程的 control flow, error handing, asynchronous actions, state.
+
+### Functor
+
+函子. 定义如下:
+
+> A Functor is a type that implements `map` and obeys some laws
+
+Wikipedia 的定义如下:
+
+> In functional programming, a **functor** is a design pattern inspired by the definition from category theory, that allows for a generic type to apply a function inside without changing the structure of the generic type.
+
+我们来看下代码
+
+```js
+class Container {
+  constructor(x) {
+    this.$value = x;
+  }
+  
+  static of(x) {
+    return new Container(x);
+  }
+}
+
+// (a -> b) -> Container a -> Container b
+Container.prototype.map = (f) => Container.of(f(this.$value));
+```
+
+`Container` 就是 **Functor**, 因为它实现了 `map` 接口, 并遵循了函子设计模式的要求, 即==在泛型类型不改变泛型类型结构的前提下应用函数==.
+
+
+
+## 为啥啊!
+
+### Q1
+
+他们说, 下面的等式成立.
+
+```js
+// filter :: (a -> Bool) -> [a] -> [a]
+compose(map(f), filter(compose(p, f))) === compose(filter(p), map(f));
+```
+
+怎么可能呢? `f` 函数在左边调用了 2 次, 而在右边只调用了 1 次, 结果怎么可能相等? 做个测试试一试.
+
+```js
+const f = (a) => a + 1;
+const p = (a) => a > 5;
+const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+const fn1 = compose(map(f), filter(compose(p, f)));
+const fn2 = compose(filter(p), map(f));
+
+console.log(`
+fn1: ${fn1(data)}
+fn2: ${fn2(data)}
+`);
+// output:
+// fn1: 6,7,8,9,10
+// fn2: 6,7,8,9,10
+```
+
+真的是相等的...为什么呢? 直观上理解 `fn1` 应该返回 `7,8,9,10,11`. 这里的陷阱在于 `filter(compose(p, f)))` 这部分, 直观上觉得塌应该返回 `[6,7,8,9,10]`, 但实际它返回的是 `[5,6,7,8,9]`, 这是因为 `filter(compose(p, f)))` 实际等于
+
+```js
+filter((data) => (data + 1) > 5)
+```
+
+开始的理解错误主要在于理解 `compose(p, f)` 时, 总觉得 `f` 返回了一个新数组, 实际上它返回的是个数值, 而不是数组, 这是错误理解的根本.
 
 ## 资源
 
