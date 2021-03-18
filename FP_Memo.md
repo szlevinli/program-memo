@@ -347,9 +347,15 @@ const reduce = curry((f, x, xs) => xs.reduce(f, x));
 
 > A Functor is a type that implements `map` and obeys some laws
 
+根据这篇帖子 [Blog-What is a functor](https://medium.com/@dtinth/what-is-a-functor-dcf510b098b6#:~:text=A%20functor%20is%20a%20mapping,its%20structure%20after%20the%20mapping.) 的描述:
+
+> A functor is simply something that can be mapped over.
+
 Wikipedia 的定义如下:
 
 > In functional programming, a **functor** is a design pattern inspired by the definition from category theory, that allows for a generic type to apply a function inside without changing the structure of the generic type.
+
+JS 中的 Array 就是 Functor.
 
 我们来看下代码
 
@@ -370,7 +376,19 @@ Container.prototype.map = (f) => Container.of(f(this.$value));
 
 `Container` 就是 **Functor**, 因为它实现了 `map` 接口, 并遵循了函子设计模式的要求, 即==在泛型类型不改变泛型类型结构的前提下应用函数==.
 
+#### The functor law
 
+1. **The identity law**: `functor` 的 `map` 函数必须返回该 `functor`. 也就是==在不改变类型结构的前提下应用 `map` 函数.==
+
+   ```js
+   functor.map(f) => functor
+   ```
+
+2. **The composition law**
+
+   ```js
+   functor.map((x) => f(g(x))) === functor.map(g).map(f)
+   ```
 
 ## 为啥啊!
 
