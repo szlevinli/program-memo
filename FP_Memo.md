@@ -376,6 +376,19 @@ Container.prototype.map = (f) => Container.of(f(this.$value));
 
 `Container` 就是 **Functor**, 因为它实现了 `map` 接口, 并遵循了函子设计模式的要求, 即==在泛型类型不改变泛型类型结构的前提下应用函数==.
 
+提取 Functor 中的值:
+
+```js
+// maybe :: b -> (a -> b) -> Maybe a -> b
+const maybe = curry((v, f, m) => {
+  if (m.isNothing) {
+    return v;
+  }
+
+  return f(m.$value);
+});
+```
+
 #### The functor law
 
 1. **The identity law**: `functor` 的 `map` 函数必须返回该 `functor`. 也就是==在不改变类型结构的前提下应用 `map` 函数.==
@@ -389,6 +402,10 @@ Container.prototype.map = (f) => Container.of(f(this.$value));
    ```js
    functor.map((x) => f(g(x))) === functor.map(g).map(f)
    ```
+
+#### Summary
+
+整体上可以这么理解, `functor` 是一个实现了 `map` 函数, 并将 `something value` 进行封装的对象, 这个 `map` 函数满足 `functor law`, 即 `1. The indentity law` 和 `2. The composition law`.
 
 ## 为啥啊!
 
