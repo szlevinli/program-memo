@@ -337,11 +337,11 @@ const reduce = curry((f, x, xs) => xs.reduce(f, x));
 
 ==`reduce` 接收一个有两个参数分别是类型 `a` 和类型 `b` 的函数, 该函数返回类型 `b`, 将该函数应用到类型 `b` 和 类型 `a` 的数组中, 并最终返回类型 `b` 作为结果.==
 
-## Tupperware
+## Functor
 
-特百惠. 这节主要接收函数式编程的 control flow, error handing, asynchronous actions, state.
+函数式编程引入 functor 的目的是解决 `control flow`, `error handing`, `asynchronous actions`, `state` and `effects`.
 
-### Functor
+### Definition
 
 函子. 定义如下:
 
@@ -389,7 +389,7 @@ const maybe = curry((v, f, m) => {
 });
 ```
 
-#### The functor law
+### The functor law
 
 1. **The identity law**: `functor` 的 `map` 函数必须返回该 `functor`. 也就是==在不改变类型结构的前提下应用 `map` 函数.==
 
@@ -403,11 +403,31 @@ const maybe = curry((v, f, m) => {
    functor.map((x) => f(g(x))) === functor.map(g).map(f)
    ```
 
-#### Summary
+### Summary
 
 整体上可以这么理解, `functor` 是一个实现了 `map` 函数, 并将 `something value` 进行封装的对象, 这个 `map` 函数满足 `functor law`, 即 `1. The indentity law` 和 `2. The composition law`.
 
-## 为啥啊!
+### Pure Error Handing
+
+
+
+## Monad
+
+单子
+
+### Pointed Functor
+
+定义:
+
+> A pointed functor is a functor with an `of` method.
+
+在 **Algebraic Structures** 中
+
+## Applicative Functors
+
+
+
+## Why!
 
 ### Q1
 
@@ -445,7 +465,7 @@ filter((data) => (data + 1) > 5)
 
 开始的理解错误主要在于理解 `compose(p, f)` 时, 总觉得 `f` 返回了一个新数组, 实际上它返回的是个数值, 而不是数组, 这是错误理解的根本.
 
-## 资源
+## Resources
 
 - [使用递归的方式遍历树模型](https://jrsinclair.com/articles/2019/functional-js-traversing-trees-with-recursive-reduce/)
 - [一个 Blog 介绍 `partial`, `currying`, `composition`](https://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-functions/)

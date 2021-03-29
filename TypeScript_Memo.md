@@ -1,5 +1,65 @@
 # TypeScript Memo
 
+## TSconfig
+
+### Module name map
+
+启用 module name map 功能需要在 <u>tsconfig.json</u> 文件中增加如下选项
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/*"],
+      "@utils/*": ["src/utils/*"],
+      "@auth/*": ["src/auth/*"],
+      "@datasources/*": ["src/datasources/*"],
+      "@generated/*": ["src/generated/*"],
+      "@graphql/*": ["src/graphql/*"]
+    }
+  }
+}
+```
+
+在 ts 文件中可以如下引用模块
+
+```typescript
+import { genQueryDocsParaById } from '@utils/tools';
+```
+
+添加 `tsconfig-paths` 包
+
+```bash
+yarn add -D tsconfig-paths
+```
+
+增加参数到 `ts-node` 命令行
+
+```bash
+ts-node -r tsconfig-paths/register
+```
+
+添加 `tsconfig-paths-jest` 包
+
+```bash
+yarn add -D tsconfig-paths-jest
+```
+
+修改 <u>jest.config.js</u> 文件
+
+```js
+/* eslint-disable */
+const tsconfig = require('./tsconfig.json');
+const moduleNameMapper = require('tsconfig-paths-jest')(tsconfig);
+
+module.exports = {
+  moduleNameMapper
+}
+```
+
+> 如果 `jest` 报错, 则需要将 `tsconfig.json` 中的所有注释去掉
+
 ## JavaScript
 
 ### Null vs. Undefined

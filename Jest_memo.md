@@ -10,15 +10,27 @@ jest.spyOn(Storage.prototype, 'setItem')
 ## Mock default value
 
 ```typescript
-import * as SomeName from './some_path';
+import defaultFunction from './some_path';
 
 jest.mock('./some_path');
-const mockedDefaultFunction = SomeName.default as jest.MockedFunction<typeof SomeName.default>;
+const mockedDefaultFunction = <jest.MockedFunction<typeof defaultFunction>>defaultFunction;
 
 it('...', () => {
   mockedDefaultFunction.mock...
 });
 ```
+
+使用 `ts-jest/utils` 帮助函数
+
+```typescript
+import { mocked } from 'ts-jest/utils';
+import getWXAccessToken from '../utils/getWXAccessToken';
+
+jest.mock('../utils/getWXAccessToken');
+const mockedGetWXAccessToken = mocked(getWXAccessToken);
+```
+
+
 
 ## Mock module With TypeScript
 
