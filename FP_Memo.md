@@ -184,6 +184,54 @@ This ability to reason about code is terrific for refactoring and understanding 
 >
 > In mathematics and computer science, **currying** is the technique of converting a function that takes multiple arguments into a sequence of functions that each take a single argument.
 
+## Declarative Programming
+
+### Arithmetic
+
+- `+` -> `add`
+- `-` -> `subtract`
+- `*` -> `multiply`
+- `/` -> `divide`
+- `++` -> `inc`
+- `--` -> `dec`
+- `-(负)` -> `negate`
+
+### Comparison
+
+- `===` -> `equals` `identical`
+- `>=` -> `gte`
+- `<=` -> `lte`
+- `>` -> `gt`
+- `<` -> `lt`
+- `isEmpty` -> checking if a string or array is empty (`str === ''` or  `arr.length === 0`)
+- `isNul` -> checking if a variable is `null` or `undefined`
+
+### Logic
+
+- `!` -> `complement` for function. `not` for value.
+- `&&` -> `both `for function. `and` for value.
+- `||` -> `either `for function. `or` for value.
+- `defaultTo` -> `const x = setting.length || 80` 等于 `const x = defaultTo(80, setting.length)`
+
+### Conditionals
+
+- `ifElse` -> 返回一个函数, 且所有接收的参数均为函数 `if...then...else` or `?...:...`
+- `when` -> 返回一个函数. `if...return`
+- `unless` -> 返回一个函数. `if...else...return`
+- `cond` -> `switch`
+
+### Constants
+
+- `always` -> return a function `const t = always('Tee'); t(); //=> 'Tee'`
+- `T` -> `T(); //=> true`
+- `F` -> `F(); //=> false`
+
+### Identity
+
+- `identity` ->  return a value. just return first argument
+- `nthArg` -> return a function. `nthArg(1)('a', 'b', 'c'); //=> 'b'` `nthArg(-1)('a', 'b', 'c'); //=> 'c'`
+- 
+
 ## Coding by Composing
 
 关于 `composing` 有一点是值得注意的, 就是被组合的函数满足结合律(associativity)
@@ -470,4 +518,5 @@ filter((data) => (data + 1) > 5)
 - [使用递归的方式遍历树模型](https://jrsinclair.com/articles/2019/functional-js-traversing-trees-with-recursive-reduce/)
 - [一个 Blog 介绍 `partial`, `currying`, `composition`](https://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-functions/)
 - [介绍 `purity` 和 `pointfree style`](https://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-style/)
-- 
+- [Think in Ramda](https://randycoulman.com/blog/categories/thinking-in-ramda/)
+
