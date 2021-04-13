@@ -475,6 +475,58 @@ const maybe = curry((v, f, m) => {
 
 
 
+## Laws
+
+### Functor
+
+#### Identity
+
+```js
+map(id) === id;
+```
+
+```js
+const idLaw1 = map(id);
+const idLaw2 = id;
+
+idLaw1(Container.of(2)); // Container(2)
+idLaw2(Container.of(2)); // Container(2)
+```
+
+#### Composition
+
+```js
+compose(map(f), map(g)) === map(compose(f, g));
+```
+
+```js
+const compLaw1 = compose(map(append(' world')), map(append(' cruel')));
+const compLaw2 = map(compose(append(' world'), append(' cruel')));
+
+compLaw1(Container.of('Goodbye')); // Container('Goodbye cruel world')
+compLaw2(Container.of('Goodbye')); // Container('Goodbye cruel world')
+```
+
+### Monda
+
+#### Identity
+
+```js
+// identity for all (M a)
+compose(join, of) === compose(join, map(of)) === id;
+```
+
+![img](https://gblobscdn.gitbook.com/assets%2F-MT09zmSclnRGt38Vn0l%2Fsync%2Fc4ef025f6e0c0a5565e1cc3889b3709347b76ba7.png?alt=media)
+
+#### Associativity
+
+```js
+// associativity
+compose(join, map(join)) === compose(join, join);
+```
+
+![img](https://gblobscdn.gitbook.com/assets%2F-MT09zmSclnRGt38Vn0l%2Fsync%2F5626436501de6f2d4db2ffd8e1f8dbee35074094.png?alt=media)
+
 ## Why!
 
 ### Q1
