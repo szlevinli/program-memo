@@ -295,4 +295,5 @@ const nextThing = iterator.next('bar');
 
 - [一篇 Stack Overflow 上关于泛化 Enum 的优秀帖子](https://stackoverflow.com/questions/50376977/generic-type-to-get-enum-keys-as-union-string-in-typescript)
 - [一篇相当优秀的高级 TypeScript 模式 (How to master advanced TypeScript patterns)](https://www.freecodecamp.org/news/typescript-curry-ramda-types-f747e99744ab/)
+- [对 tsconfig 解释的比较透彻的文章](https://www.stackchief.com/blog/tsconfig%20%7C%20the%20missing%20docs)
 
