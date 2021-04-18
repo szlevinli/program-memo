@@ -469,11 +469,119 @@ const maybe = curry((v, f, m) => {
 
 > A pointed functor is a functor with an `of` method.
 
-在 **Algebraic Structures** 中
+### Monad
+
+定义:
+
+> Monads are pointed functors that can flatten.
+
+Monad 主要处理 '嵌套容器' 的情况, 其中 '嵌套容器' 指的是容器的值仍然是容器, 比如
+
+```js
+Maybe.of(IO.of('hello'));
+```
+
+通过实现 `join` 和 `chain` 函数来提供 monad 的功能, 其中 `join` 函数实际执行的是 `flatten` 的功能
+
+```js
+Container.prototype.join = function () {
+  return this.$value;
+}
+```
+
+`chain` 函数实现的是 `flatMap` 的功能
+
+```js
+Container.prototype.chain = function (fn) {
+  return this.map(fn).join();
+}
+```
+
+
 
 ## Applicative Functors
 
+定义:
 
+> A applicative functor is a pointed functor with an `ap` function.
+
+```js
+Container.prototype.ap = function (otherContainer) {
+  return otherContainer.map(this.$value);
+};
+```
+
+`ap` 函数是接收一个 *其他容器 (eg: Maybe, IO, Either...)* 作为参数, 将自己的值传递给 *其他容器 (eg: Maybe, IO, Either...)*  的 `map` 函数, 因此这就要求这个 *其他容器 (eg: Maybe, IO, Either...)* 的值必须是个函数.
+
+`lift(*)` 的原理
+
+```js
+const liftA2 = curry((g, f1, f2) => f1.map(g).ap(f2));
+
+const liftA3 = curry((g, f1, f2, f3) => f1.map(g).ap(f2).ap(f3));
+
+// liftA4, etc
+```
+
+Example:
+
+```js
+import R from 'ramda';
+import * as Lib from './lib'; // libaray for algebraic structures. eg. Maybe, IO, Task ...
+
+const liftA2 = R.liftN(2, (a, b) => a + b);
+const eqLiftA2 = Lib.Maybe.of(R.add).ap(Lib.Maybe.of(2)).ap(Lib.Maybe.of(3));
+echo('demo3.liftA2', liftA2(Lib.Maybe.of(2), Lib.Maybe.of(3)); // Output: Just(5)
+echo('demo3.eqLiftA2', eqLiftA2); // Output: Just(5)
+```
+
+使用 `lift(*)` 代替 `map/ap` 的目的是为了泛化.
+
+## Naturally Transform
+
+定义
+
+> A *naturally transformation* is any function for which the following holds:
+
+![img](https://gblobscdn.gitbook.com/assets%2F-MT09zmSclnRGt38Vn0l%2Fsync%2F2141f24fac101e0cafa5e11ee75d7d2c85edf0ef.png?alt=media)
+
+in code:
+
+```js
+// nt :: (Functor f, Functor g) => f a -> g a
+compose(map(f), nt) === compose(nt, map(f));
+```
+
+
+
+### Isomorphic
+
+> When we can completely go back and forth without losing an information, that is considered an ***isomorphic***.
+
+## Traverse
+
+The ***traversable*** interface consists of two functions: `sequence` and `traverse`.
+
+`traverse :: Applicative f, Traversable t => t a ~> (TypeRep f, a -> f b) -> f (t b)`
+
+**Traversable** interface 的目的是, 将一个可 ***traversable*** 的 `Container` 中的每一个元素(iteratee)转换为可 ***applicative*** 的 `Container`, 最后返回这个 ***applicative*** `Container` 其值为 ***traversable*** 的 `Container`. 
+
+举例如下:
+
+```js
+// Returns `Maybe.Nothing` if the given divisor is `0`
+// safeDiv :: Number -> Number -> Maybe Nothing Number
+const safeDiv = (n) => (d) => d === 0 ? Maybe.Nothing() : Maybe.Just(n / d);
+
+R.traverse(Maybe.of, safeDiv(10), [2, 4, 5]); //=> Maybe.Just([5, 2.5, 2])
+R.traverse(Maybe.of, safeDiv(10), [2, 0, 5]); //=> Maybe.Nothing
+```
+
+> **说明:** 为了解决除零问题, 创建一个函数 `sfaeDiv` 其返回一个 `Maybe` 容器, 从而将发生除零的异常封闭到 `Maybe` 容器中. 接着我们希望将这个函数应用到数组(数组就是一个 *traversable* 容器), 因为我们需要应用的函数(这里指的是 `safeDiv`)返回 `Maybe` 容器, 且该容器是 *applicative* 的, 因此我们可以使用 `trasver` 来解决.
+>
+> **Note:** 注意如果过程中出现除零情况, 则最终返回的结果为 `Maybe.Nothing`
+
+上列可以读作: 将可 ***traversable*** 的 `Array Number` 容器 中的每一个元素转换为可 ***applicative*** 的 `Maybe Number` 容器, 最后返回 `Maybe [Number]` 容器
 
 ## Laws
 
@@ -526,6 +634,39 @@ compose(join, map(join)) === compose(join, join);
 ```
 
 ![img](https://gblobscdn.gitbook.com/assets%2F-MT09zmSclnRGt38Vn0l%2Fsync%2F5626436501de6f2d4db2ffd8e1f8dbee35074094.png?alt=media)
+
+### Applicative Functors
+
+#### Identity
+
+```js
+// identity
+A.of(id).ap(v) === v;
+```
+
+Example:
+
+```js
+const v = Identity.of('Pillow Pets');
+Identity.of(id).ap(v) === v;
+```
+
+
+
+#### Homomorphism
+
+```js
+// homomorphism
+A.of(f).ap(A.of(x)) === A.of(f(x));
+```
+
+Example:
+
+```js
+Either.of(toUpperCase).ap(Either.of('oreos')) === Either.of(toUpperCase('oreos'));
+```
+
+
 
 ## Why!
 
