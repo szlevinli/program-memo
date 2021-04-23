@@ -539,6 +539,12 @@ echo('demo3.eqLiftA2', eqLiftA2); // Output: Just(5)
 
 ## Naturally Transform
 
+***Natural Transformations*** 是用来解决 *容器嵌套* 问题的. *容器嵌套* 即容器的值仍然是容器, 比如: `Task Error (Maybe (Either ValidationError (Task Error Comment)))`
+
+这种方法的函数签名为: `(Functor f, Functor g) => f a -> f g`
+
+可以使用 *换汤不换药* 来理解, 即保持值不变的情况下更换容器.
+
 定义
 
 > A *naturally transformation* is any function for which the following holds:
@@ -582,6 +588,122 @@ R.traverse(Maybe.of, safeDiv(10), [2, 0, 5]); //=> Maybe.Nothing
 > **Note:** 注意如果过程中出现除零情况, 则最终返回的结果为 `Maybe.Nothing`
 
 上列可以读作: 将可 ***traversable*** 的 `Array Number` 容器 中的每一个元素转换为可 ***applicative*** 的 `Maybe Number` 容器, 最后返回 `Maybe [Number]` 容器
+
+## Monoids
+
+**Monoids** are about ***combination***.
+
+**Combination** can mean so many things from *accumulation* to *concatenation* to *multiplication* to *choice*, *composition*, *ordering*, event *evaluation*. (_**Combination** 意味着这样一些东西, 累积, 连接, 相乘, 选择, 组合, 排序, 甚至是计算_)
+
+### Semigroup
+
+**Semigroup** is a type with a `concat` method.
+
+Semigroup 的一些例子
+
+```js
+const Sum = x => ({x, concat: (other) => Sum(x + other.x)});
+
+const Product = x => ({ x, concat: other => Product(x * other.x) });
+
+const Min = x => ({ x, concat: other => Min(x < other.x ? x : other.x) });
+
+const Max = x => ({ x, concat: other => Max(x > other.x ? x : other.x) });
+
+const Any = x => ({ x, concat: other => Any(x || other.x) });
+
+const All = x => ({ x, concat: other => All(x && other.x) });
+```
+
+对于 `functor` 实现 `semigroup` 的要求是, `functor` 所持的数据必须是 `semigroup`
+
+```js
+Identity.prototype.concat = function(other) {
+  return new Identity(this.$value.concat(other.$value))
+}
+
+Identity.of(Sum(4)).concat(Identity.of(Sum(1))) // Identity(Sum(5))
+Identity.of(4).concat(Identity.of(1)) // TypeError: this.__value.concat is not a function
+```
+
+Semigroup 的用途
+
+```js
+// formValues :: Selector -> IO (Map String String)
+// validate :: Map String String -> Either Error (Map String String)
+
+formValues('#signup').map(validate).concat(formValues('#terms').map(validate)) 
+//=> IO(Right(Map({username: 'andre3000', accepted: true})))
+
+formValues('#signup').map(validate).concat(formValues('#terms').map(validate)) 
+//=> IO(Left('one must accept our totalitarian agreement'))
+
+serverA.get('/friends').concat(serverB.get('/friends')) // Task([friend1, friend2])
+
+// loadSetting :: String -> Task Error (Maybe (Map String Boolean))
+loadSetting('email').concat(loadSetting('general')) 
+//=> Task(Maybe(Map({backgroundColor: true, autoSave: false})))
+```
+
+### Monoids
+
+**Monoids** 首先是 **Semigroup**, 即实现了 `concat` 接口的类型, 同时他还实现了 `empty` 接口.
+
+在数学中有个重要的概念 `0`, 抽象出来 `0` 代表的是任何与 `0` 进行操作的元素还等于其本身, 即可以作为 `identity`, 在范畴论中使用 `empty` 接口实现.
+
+```js
+Array.empty = () => []
+String.empty = () => ""
+Sum.empty = () => Sum(0)
+Product.empty = () => Product(1)
+Min.empty = () => Min(Infinity)
+Max.empty = () => Max(-Infinity)
+All.empty = () => All(true)
+Any.empty = () => Any(false)
+```
+
+### Folding
+
+`fold` 实际解决的是基于 algebraic structure 的 `reduce` 功能
+
+```js
+// fold :: Monoid m => m ~> m -> [m] -> m
+const fold = reduce(concat)
+```
+
+```js
+fold(Sum.empty(), [Sum(1), Sum(2)]) // Sum(3)
+fold(Sum.empty(), []) // Sum(0)
+
+fold(Any.empty(), [Any(false), Any(true)]) // Any(true)
+fold(Any.empty(), []) // Any(false)
+
+
+fold(Either.of(Max.empty()), [Right(Max(3)), Right(Max(21)), Right(Max(11))]) // Right(Max(21))
+fold(Either.of(Max.empty()), [Right(Max(3)), Left('error retrieving value'), Right(Max(11))]) // Left('error retrieving value')
+
+fold(IO.of([]), ['.link', 'a'].map($)) // IO([<a>, <button class="link"/>, <a>])
+```
+
+### Endomorphisms
+
+> The domain is in the same set as the codomain, are called *endomorphisms*
+
+## Morphisms
+
+### Isomorphic
+
+> When we can completely go back and forth without losing an information, that is considered an ***isomorphic***.
+
+### Endomorphisms
+
+> The domain is in the same set as the codomain, are called *endomorphisms*
+
+`fold`: `reduce` & `empty`
+
+### Catamorphisms
+
+`reduceRight`
 
 ## Laws
 
@@ -706,10 +828,24 @@ filter((data) => (data + 1) > 5)
 
 开始的理解错误主要在于理解 `compose(p, f)` 时, 总觉得 `f` 返回了一个新数组, 实际上它返回的是个数值, 而不是数组, 这是错误理解的根本.
 
+## Fantasy Land Specification
+
+### Setoid
+
+**A setoid** is any type with a notion of **equivalence**. (提供判断是否相等的接口的类型)
+
+```haskell
+equals :: Setoid a => a ~> a -> a -> Boolean
+```
+
+
+
 ## Resources
 
 - [使用递归的方式遍历树模型](https://jrsinclair.com/articles/2019/functional-js-traversing-trees-with-recursive-reduce/)
 - [一个 Blog 介绍 `partial`, `currying`, `composition`](https://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-functions/)
 - [介绍 `purity` 和 `pointfree style`](https://jrsinclair.com/articles/2016/gentle-introduction-to-functional-javascript-style/)
 - [Think in Ramda](https://randycoulman.com/blog/categories/thinking-in-ramda/)
+- [Fantasy Land 规范](https://github.com/fantasyland/fantasy-land)
+- [详细解释 Fantasy Land 规范的帖子](http://www.tomharding.me/fantasy-land/)
 
