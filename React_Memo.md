@@ -96,6 +96,16 @@ const [localState, setLocalState] = useState(props.theme)
 
 应用场景: 列表显示的场景, 如果提供删除操作, 那么必须使用 **useMemo** 去 wrapping 列表中的 item, 用 **useCallback** 去 wrapping *remove* 函数(这里需要注意 dependencies 以及 setState 的用法).
 
+## Testing
+
+### Testing-Library
+
+#### Search Variants
+
+- **getBy*:** 如果找不到元素会抛出异常
+- **queryBy*:** 如果找不到元素不会抛出异常
+- **findBy*:** 用于异步情况
+
 ## Reference
 
 - [Writing Resilient Components](https://overreacted.io/writing-resilient-components)
