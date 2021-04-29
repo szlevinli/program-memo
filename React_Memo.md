@@ -106,6 +106,10 @@ const [localState, setLocalState] = useState(props.theme)
 - **queryBy*:** 如果找不到元素不会抛出异常
 - **findBy*:** 用于异步情况
 
+#### Fire Event
+
+`fireEvent` vs. `userEvent`, `userEvent` 包更贴近用户在浏览器中操作, 比如 `userEvent.type` 方法不但可以触发 `change` 事件, 还可以触发 `keyDown`, `keyPress`, `keyUp` 等的事件, 而 `fireEvent.change` 方法仅能触发 `change` 事件.
+
 ## Reference
 
 - [Writing Resilient Components](https://overreacted.io/writing-resilient-components)
