@@ -1,3 +1,5 @@
+
+
 # Functional Programming Memo
 
 ## Pure Happiness with pure functions
@@ -704,6 +706,71 @@ fold(IO.of([]), ['.link', 'a'].map($)) // IO([<a>, <button class="link"/>, <a>])
 ### Catamorphisms
 
 `reduceRight`
+
+## Lens
+
+*<u>[Medium Lenses](https://medium.com/javascript-scene/lenses-b85976cb0534)</u>*
+
+`lens` 是实现了 `getter` 和 `setter` 纯函数方法的对象, 并遵守一套 `lens laws` 原则/公理(axioms).主要针对被操作对象 (在 `lens` 体系中将被操作的对象成为 `store`) 的某一具体字段来进行读取和设置操作.
+
+`lens` 的目的是为了解决软件开发中出现的常见耦合问题, 即 `State shape dependencies`. 很多程序组件都会依赖一些 `shared state`, 因此如果需要修改这个 `state` 的 `shape`, 就必须在软件的很多地方修改业务实现逻辑.
+
+> A lens is a composable pair of pure getter and setter functions which focus on a particular field inside an object, and obey a set of axioms known as the lens laws. Think of the object as the *whole* and the field as the *part*. The getter takes a whole and returns the part of the object that the lens is focused on.
+
+```js
+view = whole => part
+```
+
+```js
+set = whole => part => whole
+```
+
+以下范例使用 `Ramda` 包
+
+```js
+// create lens for object
+const xLens = R.lens(R.prop('x'), R.assoc('x'));
+
+const store = {x: 1, y: 2};
+
+R.view(xLens, store); //=> 1
+R.set(xLens, 4, store); //=> {x: 4, y: 2}
+R.over(xLens, R.negate, store); //=> {x: -1, y: 2}
+```
+```js
+// create lens for object (syntactic sugar)
+const xLens = R.lensProp('x');
+
+const store = {x: 1, y: 2};
+
+R.view(xLens, store); //=> 1
+R.set(xLens, 4, store); //=> {x: 4, y: 2}
+R.over(xLens, R.negate, store); //=> {x: -1, y: 2}
+```
+
+```js
+// create lens for array
+const headLens = R.lensIndex(0);
+
+const store = ['a', 'b', 'c'];
+
+R.view(headLens, store); //=> 'a'
+R.set(headLens, 'x', store); //=> ['x', 'b', 'c']
+R.over(headLens, R.toUpper, store); //=> ['A', 'b', 'c']
+```
+
+```js
+// create lens for deep object
+const xHeadYLens = R.lensPath(['x', 0, 'y']);
+
+const store = {x: [{y: 2, z: 3}, {y: 4, z: 5}]};
+
+R.view(xHeadYLens, store); //=> 2
+R.set(xHeadYLens, 1, store); //=> {x: [{y: 1, z: 3}, {y: 4, z: 5}]}
+R.over(xHeadYLens, R.negate, store); //=> {x: [{y: -2, z: 3}, {y: 4, z: 5}]}
+```
+
+
 
 ## Laws
 
