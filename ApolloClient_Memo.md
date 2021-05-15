@@ -218,6 +218,11 @@ Apollo Client 自身提供两种方式存储 local state. (也可以使用第三
 - cache.ts: cartItemsVar, currentItemIdVar, getItem, allItems, currentItemId
 - App.tsx: GET_REPOSITORIES, ...
 
+### Reactive variables
+
+- 在 field policies 中的 `read` 中使用 reactive variables 可以实现自动刷新 active query
+- 在 component 中的 `useReactiveVar` hook 中使用  reactive variables 可以实现自动刷新 component
+
 ## Helper code
 
 - **设置 field policies** 的帮助函数, 下面的帮助函数用于简化生成 `read` 策略.
