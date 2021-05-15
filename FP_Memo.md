@@ -772,6 +772,31 @@ R.over(xHeadYLens, R.negate, store); //=> {x: [{y: -2, z: 3}, {y: 4, z: 5}]}
 
 
 
+## Terminology
+
+### Isomorphism
+
+同构. 定义一个函数, 接收其他函数作为参数, 并返回一个新函数, 且在新函数中调用传入的函数参数, 这种 pattern 称为同构. 这种方式的本质是在input 和 output 间建立一个 mapping.
+
+```js
+// fMultiply :: (() -> Number) -> (() -> Number) -> (() -> Number)
+function fMultiply(a, b) {
+    return () => a() * b();
+}
+
+// fPow :: (() -> Number) -> (() -> Number) -> (() -> Number)
+function fPow(a, b) {
+    return () => Math.pow(a(), b());
+}
+
+// fSqrt :: (() -> Number) -> (() -> Number)
+function fSqrt(x) {
+    return () => Math.sqrt(x());
+}
+```
+
+
+
 ## Laws
 
 ### Functor
