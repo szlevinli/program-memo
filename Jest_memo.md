@@ -1,5 +1,83 @@
 # Jest Memo
 
+## Install Jest for NextJs with Typescript Project
+
+### Add Jest
+```bash
+yarn add -D jest @types/jest
+```
+
+### Add Babel
+```bash
+yarn add -D babel-jest
+```
+
+### Add testing-library library
+```bash
+yarn add -D @testing-library/react @testing-library/jest-dom @testing-library/user-event @testing-library/dom
+```
+
+### Config Babel
+
+```bash
+touch .babelrc
+```
+
+add to the `.babelrc` file
+
+```json
+// .babelrc
+{
+  "presets": ["next/babel"]
+}
+```
+
+### Config Jest (Options 1)
+
+```bash
+yarn jest --init
+```
+
+
+
+### Config Jest (Option 2)
+
+```bash
+touch jest.config.js
+touch jest.setup.js
+```
+
+add to the `jest.config.js` file
+
+```json
+// jest.config.js
+module.exports = {
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+};
+```
+
+add to the `jest.setup.js` file
+
+```json
+// jest.setup.ts
+import '@testing-library/jest-dom';
+```
+
+### Add ts-node
+
+For vscode extension jest can rull
+
+```bash
+yarn add -D ts-node
+```
+
+### Restar VsCode
+
+Close Folder
+
+Open Folder
+
 ## Mock localStorage
 
 ```typescript
