@@ -110,6 +110,43 @@ const [localState, setLocalState] = useState(props.theme)
 
 `fireEvent` vs. `userEvent`, `userEvent` 包更贴近用户在浏览器中操作, 比如 `userEvent.type` 方法不但可以触发 `change` 事件, 还可以触发 `keyDown`, `keyPress`, `keyUp` 等的事件, 而 `fireEvent.change` 方法仅能触发 `change` 事件.
 
+#### waitFor
+
+waitFor 的内部实现逻辑类似下面的代码.
+
+实现思路是: 每 x 毫秒 (step) 执行一次回调函数 `cb`, 如果该回调函数执行成功则结束, 否则继续执行直至超时.
+
+`cb` 函数执行不成功会抛出异常, 由 catch 捕获, 但不处理, 继续循环.
+
+```js
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitFor(cb, timeout = 500) {
+  const step = 10;
+  let timeSpent = 0;
+  let timeOut = false;
+
+  while (true) {
+    try {
+      await sleep(step);
+      timeSpent += step;
+      cb();
+      break;
+    } catch {}
+    if (timeSpent >= timeout) {
+      timeOut = true;
+      break;
+    }
+  }
+
+  if (timeOut) {
+    throw new Error('timeout');
+  }
+}
+```
+
 ## Reference
 
 - [Writing Resilient Components](https://overreacted.io/writing-resilient-components)
