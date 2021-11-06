@@ -147,6 +147,182 @@ async function waitFor(cb, timeout = 500) {
 }
 ```
 
+### Test react hooks
+
+[一个相当优秀且完整的关于如何测试 react hook 的文章.](https://www.toptal.com/react/testing-react-hooks-tutorial)
+
+待测试的 hook:
+
+```typescript
+import { useEffect, useState } from 'react';
+
+const CACHE: Record<string, any> = {};
+
+export default function useStaleRefresh(url: string, defaultValue = []) {
+  const [data, setData] = useState<any>(defaultValue);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const cacheID = url;
+    if (CACHE[cacheID] !== undefined) {
+      setData(CACHE[cacheID]);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+      setData(defaultValue);
+    }
+
+    fetch(url)
+      .then((res) => res.json)
+      .then((newData) => {
+        CACHE[cacheID] = newData;
+        setData(newData);
+        setIsLoading(false);
+      });
+  }, [url, defaultValue]);
+
+  return [data, isLoading];
+}
+```
+
+测试 hook 的测试代码
+
+```js
+import { render, unmountComponentAtNode } from 'react-dom';
+import useStaleRefresh from './useStaleRefresh';
+import { act, waitFor } from '@testing-library/react';
+
+function fetchMock(url, suffix = '') {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve({
+        json: {
+          data: url + suffix,
+        },
+      });
+    }, 200 + Math.random() * 300)
+  );
+}
+
+const defaultValue = { data: '' };
+
+function TestComponent({ url }) {
+  const [data, isLoading] = useStaleRefresh(url, defaultValue);
+
+  if (isLoading) {
+    return <div>loading</div>;
+  }
+
+  return <div>{data.data}</div>;
+}
+
+beforeAll(() => {
+  global.fetch = jest.fn().mockImplementation(fetchMock);
+});
+
+afterAll(() => {
+  global.fetch.mockClear();
+  delete global.fetch;
+});
+
+let container = null;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+});
+
+afterEach(() => {
+  unmountComponentAtNode(container);
+  container.remove();
+  container = null;
+});
+
+it('useStaleRefresh hook runs correctly', async () => {
+  act(() => {
+    render(<TestComponent url="url1" />, container);
+  });
+  expect(container.textContent).toBe('loading');
+  await waitFor(() => {
+    expect(container.textContent).toBe('url1');
+  });
+
+  act(() => {
+    render(<TestComponent url="url2" />, container);
+  });
+  expect(container.textContent).toBe('loading');
+  await waitFor(() => {
+    expect(container.textContent).toBe('url2');
+  });
+
+  global.fetch.mockImplementation((url) => fetchMock(url, '__'));
+
+  act(() => {
+    render(<TestComponent url="url1" />, container);
+  });
+  expect(container.textContent).toBe('url1');
+  await waitFor(() => {
+    expect(container.textContent).toBe('url1__');
+  });
+
+  act(() => {
+    render(<TestComponent url="url2" />, container);
+  });
+  expect(container.textContent).toBe('url2');
+  await waitFor(() => {
+    expect(container.textContent).toBe('url2__');
+  });
+});
+```
+
+使用 @testing-library/react-hooks 测试包测试
+
+```js
+it('useStaleRefresh hook runs correctly with test library', async () => {
+  const { result, rerender } = renderHook(
+    ({ url }) => useStaleRefresh(url, defaultValue),
+    {
+      initialProps: {
+        url: 'url1',
+      },
+    }
+  );
+
+  expect(result.current[0]).toEqual(defaultValue);
+  expect(result.current[1]).toBeTruthy();
+  await waitFor(() => {
+    expect(result.current[0].data).toEqual('url1');
+    expect(result.current[1]).toBeFalsy();
+  });
+
+  rerender({ url: 'url2' });
+  expect(result.current[0]).toEqual(defaultValue);
+  expect(result.current[1]).toBeTruthy();
+  await waitFor(() => {
+    expect(result.current[0].data).toEqual('url2');
+    expect(result.current[1]).toBeFalsy();
+  });
+
+  global.fetch.mockImplementation((url) => fetchMock(url, '__'));
+
+  rerender({ url: 'url1' });
+  expect(result.current[0].data).toEqual('url1');
+  expect(result.current[1]).toBeFalsy();
+  await waitFor(() => {
+    expect(result.current[0].data).toEqual('url1__');
+    expect(result.current[1]).toBeFalsy();
+  });
+
+  rerender({ url: 'url2' });
+  expect(result.current[0].data).toEqual('url2');
+  expect(result.current[1]).toBeFalsy();
+  await waitFor(() => {
+    expect(result.current[0].data).toEqual('url2__');
+    expect(result.current[1]).toBeFalsy();
+  });
+});
+```
+
 ## Reference
 
 - [Writing Resilient Components](https://overreacted.io/writing-resilient-components)
