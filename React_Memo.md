@@ -49,7 +49,7 @@ declare global {
 
 ### Import png file
 
-Add floder and files <u>src/typings/png.d.ts</u>
+Add folder and files <u>src/typings/png.d.ts</u>
 
 ```typescript
 declare module '*.png';
